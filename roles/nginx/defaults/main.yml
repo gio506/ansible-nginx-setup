@@ -1,0 +1,7 @@
+---
+nginx_package_name: nginx
+nginx_service_name: nginx
+nginx_index_path: /usr/share/nginx/html/index.html
+nginx_page_title: "Welcome from Ansible"
+nginx_page_message: "Nginx was installed and configured by the nginx role."
+nginx_manage_service: true

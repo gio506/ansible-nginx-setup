@@ -1,0 +1,64 @@
+---
+name: ansible-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  yaml-lint:
+    name: YAML lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ibiqlik/action-yamllint@v3
+
+  ansible-lint:
+    name: ansible-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ansible and ansible-lint
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint
+      - name: Run ansible-lint
+        run: ansible-lint
+
+  syntax-check:
+    name: Ansible syntax-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+      - name: Syntax check
+        run: ansible-playbook -i inventory/example playbook.yml --syntax-check
+
+  docker-local-run:
+    name: Optional container run
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run playbook in Docker (Ubuntu)
+        run: |
+          docker run --rm -d --name target --hostname target -p 8080:80 ubuntu:22.04 sleep infinity
+          docker exec target bash -lc 'apt-get update && apt-get install -y python3 sudo nginx'
+          python -m pip install --upgrade pip
+          pip install ansible
+          cat > inventory/docker <<'INVENTORY'
+          [web]
+          target ansible_connection=docker
+          INVENTORY
+          ansible-playbook -i inventory/docker playbook.yml
+          docker exec target curl -I http://localhost
+          docker rm -f target
