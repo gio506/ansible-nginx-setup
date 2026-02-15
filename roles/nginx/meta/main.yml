@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  role_name: nginx
+  author: codex
+  description: Install and configure nginx with a simple index page.
+  min_ansible_version: "2.13"
+  license: MIT
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+dependencies: []
