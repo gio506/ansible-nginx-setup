@@ -50,4 +50,6 @@ printf '%s\n' "$second_run"
 grep -q "changed=0" <<<"$second_run"
 
 docker exec "$container_name" bash -lc "nginx"
-curl --fail --retry 10 --retry-delay 2 "http://127.0.0.1:${host_port}" | grep -q "Welcome from Ansible"
+page_content="$(curl --fail --silent --show-error --retry 10 --retry-delay 2 "http://127.0.0.1:${host_port}")"
+printf '%s\n' "$page_content"
+grep -q "Welcome from Ansible" <<<"$page_content"

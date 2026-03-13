@@ -15,5 +15,5 @@
 - `roles/nginx/tasks/main.yml`: package installation, config templating, and service tasks.
 - `roles/nginx/templates/index.html.j2`: custom HTML landing page.
 - `roles/nginx/templates/site.conf.j2`: server block config for nginx.
-- `roles/nginx/vars/main.yml`: platform-aware runtime user mapping.
+- `roles/nginx/vars/main.yml`: platform-aware runtime user, docroot, and site config mapping.
 - `scripts/container_smoke.sh`: disposable Docker-based smoke test with an idempotency check.

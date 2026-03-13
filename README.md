@@ -5,6 +5,7 @@ Ansible Nginx role with a testable playbook workflow, container smoke test, and 
 ## What this project does
 - Installs Nginx with a reusable `roles/nginx` role.
 - Deploys a custom landing page and a managed site config template.
+- Uses OS-aware defaults so Debian and Red Hat families write to the correct docroot.
 - Keeps service management optional for container-based tests.
 - Verifies syntax, linting, idempotency, and a runtime HTTP check in CI.
 
@@ -26,7 +27,7 @@ Ansible Nginx role with a testable playbook workflow, container smoke test, and 
 ├── roles/nginx/tasks/main.yml          # package install, config templating, and service tasks
 ├── roles/nginx/templates/index.html.j2 # custom landing page template
 ├── roles/nginx/templates/site.conf.j2  # nginx server block template
-├── roles/nginx/vars/main.yml           # platform-aware runtime user defaults
+├── roles/nginx/vars/main.yml           # platform-aware docroot, site config, and runtime user defaults
 └── scripts/container_smoke.sh          # docker-based smoke and idempotency test
 ```
 

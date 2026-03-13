@@ -21,6 +21,13 @@
     mode: "0644"
   notify: Restart nginx
 
+- name: Disable distro default site when present
+  ansible.builtin.file:
+    path: "{{ nginx_default_site_path }}"
+    state: absent
+  when: nginx_default_site_path | length > 0
+  notify: Restart nginx
+
 - name: Deploy index page
   ansible.builtin.template:
     src: index.html.j2
