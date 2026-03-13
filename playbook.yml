@@ -1,6 +1,6 @@
 ---
 - name: Configure nginx web server
   hosts: web
-  become: true
+  become: "{{ nginx_become | default(true) }}"
   roles:
     - nginx

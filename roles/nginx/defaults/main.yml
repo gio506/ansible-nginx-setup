@@ -1,7 +1,12 @@
 ---
 nginx_package_name: nginx
 nginx_service_name: nginx
-nginx_index_path: /usr/share/nginx/html/index.html
+nginx_become: true
+nginx_docroot: /usr/share/nginx/html
+nginx_index_path: "{{ nginx_docroot }}/index.html"
+nginx_site_config_path: /etc/nginx/conf.d/default.conf
+nginx_site_listen_port: 80
+nginx_server_name: localhost
 nginx_page_title: "Welcome from Ansible"
 nginx_page_message: "Nginx was installed and configured by the nginx role."
 nginx_manage_service: true

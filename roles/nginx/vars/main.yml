@@ -1,0 +1,6 @@
+---
+nginx_runtime_user_map:
+  Debian: www-data
+  RedHat: nginx
+
+nginx_runtime_user: "{{ nginx_runtime_user_map.get(ansible_os_family, 'nginx') }}"

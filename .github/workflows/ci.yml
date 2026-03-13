@@ -42,3 +42,11 @@ jobs:
           pip install ansible
       - name: Syntax check
         run: ansible-playbook -i inventory/example playbook.yml --syntax-check
+
+  smoke-test:
+    name: Container smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run container smoke test
+        run: bash scripts/container_smoke.sh

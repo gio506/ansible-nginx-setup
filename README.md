@@ -1,72 +1,73 @@
 # ansible-nginx-setup
 
-Beginner-friendly Ansible project that uses a reusable role (`roles/nginx`) to install and configure Nginx.
+Ansible Nginx role with a testable playbook workflow, container smoke test, and PR-focused CI checks.
 
 ## What this project does
-- Installs Nginx.
-- Deploys a simple HTML landing page from a Jinja2 template.
-- Enables and starts the Nginx service (optional in container tests).
+- Installs Nginx with a reusable `roles/nginx` role.
+- Deploys a custom landing page and a managed site config template.
+- Keeps service management optional for container-based tests.
+- Verifies syntax, linting, idempotency, and a runtime HTTP check in CI.
 
-## Project tree
+## Repo map
 ```text
 .
-├── .ansible-lint                  # ansible-lint config used by CI and local linting
-├── .github/
-│   └── workflows/
-│       └── ci.yml                 # 3-stage CI: YAML lint, ansible-lint, syntax-check
-├── .yamllint                      # yamllint configuration
-├── CHEATSHEET.md                  # quick command + file purpose reference
-├── inventory/
-│   └── example                    # sample inventory using localhost
-├── playbook.yml                   # main playbook applying the nginx role to [web]
-├── README.md                      # setup and usage guide
-└── roles/
-    └── nginx/
-        ├── defaults/
-        │   └── main.yml           # default variables (package, service, page content)
-        ├── handlers/
-        │   └── main.yml           # handler to restart nginx when template changes
-        ├── meta/
-        │   └── main.yml           # role metadata (platforms, min ansible version)
-        ├── tasks/
-        │   └── main.yml           # installs nginx, deploys template, manages service
-        └── templates/
-            └── index.html.j2      # Jinja2 HTML template for landing page
+├── .ansible-lint                       # ansible-lint rules used locally and in CI
+├── .github/workflows/ci.yml            # 4-stage pipeline: yamllint, ansible-lint, syntax-check, smoke
+├── .gitkeep                            # placeholder file from the original repo
+├── .yamllint                           # yamllint configuration
+├── CHEATSHEET.md                       # quick Ansible commands and workflow notes
+├── FILES_EXPLAINED.md                  # file-by-file explanation for the whole repo
+├── inventory/example                   # localhost inventory for local runs and CI syntax checks
+├── playbook.yml                        # playbook that applies the nginx role to the web group
+├── README.md                           # setup, testing, CI, and PR flow guide
+├── roles/nginx/defaults/main.yml       # user-tunable defaults for package, paths, and page content
+├── roles/nginx/handlers/main.yml       # restart handler for config changes
+├── roles/nginx/meta/main.yml           # role metadata and supported platforms
+├── roles/nginx/tasks/main.yml          # package install, config templating, and service tasks
+├── roles/nginx/templates/index.html.j2 # custom landing page template
+├── roles/nginx/templates/site.conf.j2  # nginx server block template
+├── roles/nginx/vars/main.yml           # platform-aware runtime user defaults
+└── scripts/container_smoke.sh          # docker-based smoke and idempotency test
 ```
 
 ## Prerequisites
 - Python 3.10+
-- Ansible (`pip install ansible`)
-- Optional local container test: Docker
+- `ansible`, `ansible-lint`, and `yamllint`
+- Docker for the smoke test
 
-## Quick start (localhost)
+## Local run
 ```bash
 ansible-playbook -i inventory/example playbook.yml
 ```
 
-Open `http://localhost` (or your VM/server IP) to check the page.
+Then verify the page:
 
-## Local checks
+```bash
+curl http://localhost
+```
+
+## Local validation
 ```bash
 yamllint .
 ansible-lint
 ansible-playbook -i inventory/example playbook.yml --syntax-check
+bash scripts/container_smoke.sh
 ```
 
-## Optional Docker-based local run
-Useful when you do not want to touch your host machine.
+## Idempotency
+The smoke script runs the playbook twice in a disposable Docker container. The second run must report `changed=0`.
 
-```bash
-docker run --rm -it -v "$PWD":/work -w /work ubuntu:22.04 bash
-apt-get update && apt-get install -y python3 python3-pip
-pip3 install ansible
-ansible-playbook -i inventory/example playbook.yml -e nginx_manage_service=false
-```
+## Why the smoke test disables service management
+Minimal Docker containers usually do not run `systemd`. The smoke test sets `nginx_manage_service=false`, starts `nginx` directly, and then curls the page. Normal host runs still use the default service management path.
 
-> Why `nginx_manage_service=false` in Docker? Minimal containers usually do not run `systemd`, so service tasks may fail.
+## CI pipeline
+`.github/workflows/ci.yml` defines 4 required jobs:
+1. YAML lint
+2. Ansible lint
+3. Syntax check
+4. Container smoke test with idempotency verification and `curl`
 
-## CI pipeline (GitHub Actions)
-Defined in `.github/workflows/ci.yml` with 3 stages:
-1. **YAML lint** (`yamllint` action)
-2. **ansible-lint**
-3. **syntax-check** (`ansible-playbook --syntax-check`)
+## Dev to main flow
+- Create and update changes on `dev`.
+- Open a pull request from `dev` into `main`.
+- Mark all 4 CI jobs as required checks in GitHub branch protection before merging.
