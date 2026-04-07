@@ -1,0 +1,44 @@
+---
+# Security hardening tasks for the nginx role
+# These run after the main configuration is deployed
+
+- name: Disable server version disclosure
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: "^\\s*server_tokens"
+    line: "    server_tokens off;"
+    insertafter: "http {"
+  notify: Restart nginx
+
+- name: Set secure X-Content-Type-Options header
+  ansible.builtin.lineinfile:
+    path: "{{ nginx_site_config_path }}"
+    regexp: "X-Content-Type-Options"
+    line: "    add_header X-Content-Type-Options nosniff always;"
+    insertbefore: "}"
+  notify: Restart nginx
+
+- name: Set X-Frame-Options to prevent clickjacking
+  ansible.builtin.lineinfile:
+    path: "{{ nginx_site_config_path }}"
+    regexp: "X-Frame-Options"
+    line: "    add_header X-Frame-Options DENY always;"
+    insertbefore: "}"
+  notify: Restart nginx
+
+- name: Disable unused HTTP methods
+  ansible.builtin.blockinfile:
+    path: "{{ nginx_site_config_path }}"
+    insertbefore: "}"
+    block: |
+      # Only allow safe HTTP methods
+      if ($request_method !~ ^(GET|HEAD|POST|PUT|DELETE|OPTIONS)$) {
+          return 405;
+      }
+  notify: Restart nginx
+
+- name: Verify nginx config after hardening
+  ansible.builtin.command: nginx -t
+  register: nginx_test
+  changed_when: false
+  failed_when: nginx_test.rc != 0

@@ -1,0 +1,43 @@
+# nginx_package_name: "nginx"
+# nginx_service_name: "nginx"
+# nginx_become: true
+# nginx_manage_service: true
+
+# --- Production overrides ---
+# Increase worker connections to handle more concurrent requests
+# Default is 512, production VMs with 4+ vCPUs can handle 2048
+nginx_worker_connections: 2048
+
+# Use 4 worker processes (match vCPU count on production host)
+nginx_worker_processes: 4
+
+# Enable gzip compression to reduce payload size
+nginx_enable_gzip: true
+nginx_gzip_min_length: 256
+nginx_gzip_types:
+  - text/plain
+  - text/css
+  - text/javascript
+  - application/json
+  - application/javascript
+  - application/xml
+
+# Production document root with dedicated partition
+nginx_docroot: /var/www/production
+
+# Disable server_tokens to hide Nginx version in responses
+nginx_server_tokens: "off"
+
+# Security headers to enforce in production
+nginx_security_headers:
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: "1; mode=block"
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# TLS settings for production
+nginx_ssl_protocols: "TLSv1.2 TLSv1.3"
+nginx_ssl_ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384"
+nginx_ssl_prefer_server_ciphers: "on"
+nginx_ssl_session_timeout: "1d"
+nginx_ssl_session_cache: "shared:SSL:50m"
